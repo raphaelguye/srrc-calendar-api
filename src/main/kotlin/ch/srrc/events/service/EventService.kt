@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.concurrent.locks.ReentrantReadWriteLock
-import javax.annotation.PostConstruct
+import jakarta.annotation.PostConstruct
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 

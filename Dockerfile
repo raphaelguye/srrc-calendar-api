@@ -18,11 +18,11 @@ COPY src ./src
 RUN gradle build --no-daemon -x test
 
 # Stage 2: Runtime
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 
 # Create non-root user
-RUN addgroup -S spring && adduser -S spring -G spring
+RUN groupadd -r spring && useradd -r -g spring spring
 USER spring:spring
 
 # Copy built JAR from build stage

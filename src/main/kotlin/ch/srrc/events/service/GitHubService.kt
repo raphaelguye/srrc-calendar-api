@@ -2,8 +2,11 @@ package ch.srrc.events.service
 
 import ch.srrc.events.model.GitHubRelease
 import ch.srrc.events.model.RawEvent
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
@@ -81,14 +84,25 @@ class GitHubService(
     private fun downloadEventsJson(downloadUrl: String): List<RawEvent> {
         logger.debug("Downloading events JSON from: $downloadUrl")
         
-        return webClient.get()
+        // Download as plain string first (GitHub returns application/octet-stream)
+        val jsonString = webClient.get()
             .uri(downloadUrl)
+            .accept(org.springframework.http.MediaType.APPLICATION_JSON)
             .retrieve()
-            .bodyToMono<List<RawEvent>>()
+            .bodyToMono<String>()
             .timeout(Duration.ofSeconds(REQUEST_TIMEOUT_SECONDS))
             .doOnError { error ->
                 logger.error("Failed to download events JSON: ${error.message}")
             }
-            .block() ?: emptyList()
+            .block() ?: return emptyList()
+        
+        // Parse JSON string manually
+        return try {
+            val objectMapper = jacksonObjectMapper()
+            objectMapper.readValue(jsonString, object : TypeReference<List<RawEvent>>() {})
+        } catch (e: Exception) {
+            logger.error("Failed to parse JSON: ${e.message}", e)
+            emptyList()
+        }
     }
 }

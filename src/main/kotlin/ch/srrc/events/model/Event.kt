@@ -1,7 +1,7 @@
 package ch.srrc.events.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import java.time.LocalDateTime
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 /**
@@ -62,8 +62,8 @@ data class Event(
         
         private fun isEventUpcoming(startDate: String): Boolean {
             return try {
-                val eventDate = LocalDateTime.parse(startDate, DateTimeFormatter.ISO_DATE_TIME)
-                eventDate.isAfter(LocalDateTime.now())
+                val eventDate = LocalDate.parse(startDate, DateTimeFormatter.ISO_DATE)
+                eventDate.isAfter(LocalDate.now()) || eventDate.isEqual(LocalDate.now())
             } catch (e: Exception) {
                 false
             }
